@@ -1,13 +1,12 @@
 TDL : 
-- expliquer comment spécifier le paramètre M
 - expliquer comment choisir le type d'outil (version simple ou compliquée)
 
-#** key-recovery-tool
+#**key-recovery-tool**#
 
 This repository contains our tool for finding optimal key recovery strategies in differential attacks on SPN block ciphers. 
 It also contains some supplementary material such as key recovery graphs for a variety of attacks. 
 
-##**Using the tool
+##**Using the tool**##
 
 In order to use the tool, the first step is to create a .txt file that describes the parameters of the block cipher and the attack.
 This file must be put in the file CipherSpecFiles. 
@@ -27,7 +26,27 @@ The program will output a file called result.gv. This file can be converted to a
 
 dot -Tpng result.gv -o my_graph.png
 
-##**Creating a .txt specification file 
+The program allows for optional constraints on the total time complexity, memory complexity, and time complexity in a precomputation phase.
+
+**Time complexity**
+The maximum time complexity is specified with the option --time . 
+The specification of the time complexity must be understood as a coefficient that multiplies the total number of pairs N. 
+It is specified in log_2.
+For example, the option --time 0.8 must be understood as a maximum time complexity 2^(0.8)N. 
+
+**Memory complexity**
+The maximum memory complexity is specified with the option --mem . 
+It is specified in log_2.
+For example, the option --mem 13 allows for a maximum memory complexity of 2^{13}. 
+
+**Precomputation time complexity**
+The maximum time complexity allowed in a precomputation phase is specified with the option --pre. 
+It is specified in log_2.
+It must be smaller or equal to what is specified for the option --mem . 
+For example, the option --pre 10 allows for a time complexity in the precomputation phase 2^{10}. 
+The option --mem 13 --pre15 is not valid.  
+
+##**Creating a .txt specification file**##
 
 **The specification of the S-box**
 For an s-bit S-box:
@@ -44,19 +63,19 @@ For a block size of n bits
 - example: GIFT-64's permutation:
 PERM 0 17 34 51 48 1 18 35 32 49 2 19 16 33 50 3 4 21 38 55 52 5 22 39 36 53 6 23 20 37 54 7 8 25 42 59 56 9 26 43 40 57 10 27 24 41 58 11 12 29 46 63 60 13 30 47 44 61 14 31 28 45 62 15
 
-** The number of rounds added on the plaintext side **
+**The number of rounds added on the plaintext side**
 - identifier: nrSBp
 - format: integer representing of rounds added on the plaintext side
 - example: Considering a differential attack where one wants to perform the key recovery step on 2 rounds on the plaintext side:
 nrSBp 2
 
-** The number of rounds added on the ciphertext side **
+**The number of rounds added on the ciphertext side**
 - identifier: nrSBc
 - format: integer representing of rounds added on the ciphertext side
 - example: Considering a differential attack where one wants to perform the key recovery step on 4 rounds on the ciphertext side:
 nrSBp 4
 
-** The total number of rounds **
+**The total number of rounds**
 - identifier: nrR
 - format: integer representing the total number of rounds of the instance
 - example: I study a block cipher that has a total of 18 rounds, but I want to attack a reduced version on 17 rounds, with 1 round added on the plaintext side, 2 rounds added on the ciphertext side. I thus specify 
@@ -64,7 +83,7 @@ nrSBp 1
 nrSBc 2
 nrR 17
 
-** The input of the differential **
+**The input of the differential**
 This parameter describes the input of the differential. More precisely, we specify the state at **the output of the last S-box application before entering the distinguisher** (not after but before the last linear layer). 
 For a block size of n bits
 - identifier: DINa
@@ -75,7 +94,7 @@ For a block size of n bits
 - example: Using the distinguisher on GIFT-64 described in our paper
 DINa 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 
-** The output of the differential **
+**The output of the differential**
 This parameter describes the output of the differential. More precisely, we specify the state at **the input of the first S-box application after leaving the distinguisher**. 
 For a block size of n bits
 - identifier: DOUTb
@@ -140,7 +159,7 @@ For related key settings, one must also enter the difference on each subkey as a
 DKEY 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 
 ---------
-Example of specification of a key schedule, using the key schedule of the block cipher GIFT-24. 
+**Example of specification of a key schedule**, using the key schedule of the block cipher GIFT-24.
 
 KS
 k0[2]
