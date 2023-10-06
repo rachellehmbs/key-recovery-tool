@@ -28,23 +28,31 @@ dot -Tpng result.gv -o my_graph.png
 
 The program allows for optional constraints on the total time complexity, memory complexity, and time complexity in a precomputation phase.
 
+**By default, the program only aims at finding an attack that has complexity under the given time complexity.**
+
+However, if executed with the option
+
+--underN
+
+the program aims at finding the most efficient key recovery strategy using the maximum memory/precomputation specified by the user. Although this option often outputs a better strategy overall, the program is less quick. 
+
 **Time complexity**
-The maximum time complexity is specified with the option --time . 
+The maximum time complexity is specified with the option --time when executing. 
 The specification of the time complexity must be understood as a coefficient that multiplies the total number of pairs N. 
 It is specified in log_2.
 For example, the option --time 0.8 must be understood as a maximum time complexity 2^(0.8)N. 
 
 **Memory complexity**
-The maximum memory complexity is specified with the option --mem . 
+The maximum memory complexity is specified with the option --mem when executing. 
 It is specified in log_2.
 For example, the option --mem 13 allows for a maximum memory complexity of 2^{13}. 
 
 **Precomputation time complexity**
-The maximum time complexity allowed in a precomputation phase is specified with the option --pre. 
+The maximum time complexity allowed in a precomputation phase is specified with the option --pre when executing. 
 It is specified in log_2.
-It must be smaller or equal to what is specified for the option --mem . 
+It must be smaller or equal to what is specified for the option --pre . 
 For example, the option --pre 10 allows for a time complexity in the precomputation phase 2^{10}. 
-The option --mem 13 --pre15 is not valid.  
+The option --mem 13 --pre 15 is not valid.  
 
 ##**Creating a .txt specification file**##
 
@@ -106,7 +114,7 @@ For a block size of n bits
 DOUTb 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0
 
 **The difference at the input of the last S-box before entering the differential**
-This parameter allows to impose some differential contraints on the last S-box transition preceeding the distinguisher. This can be done by imposing a specific difference on certain bits at the **the input** of the last S-box application before entering the distinguisher. Please note that some differential constraints are imposed by the propagation from the distinguisher even if no conditions are imposed manually using this parameter. Typically, an inactive S-box will stay inactive. However, this parameter can be useful to manually add extra constraints that do not naturally stem from the distinguisher. 
+This parameter allows to impose some differential contraints on the last S-box transition preceding the distinguisher. This can be done by imposing a specific difference on certain bits at the **the input** of the last S-box application before entering the distinguisher. Please note that some differential constraints are imposed by the propagation from the distinguisher even if no conditions are imposed manually using this parameter. Typically, an inactive S-box will stay inactive. However, this parameter can be useful to manually add extra constraints that do not naturally stem from the distinguisher. 
 - identifier: DINb
 - format: n integers that can take three values: 0, 1 or 3. 
 0 means that there is a difference 0 on that bit. 
@@ -124,9 +132,6 @@ This parameter allows to impose some differential contraints on the first S-box 
 3 means that there is no difference imposed on that bit. 
 - example: In the propagation on the plaintext size in the attack on GIFT-64, we wish to impose no condition at the output of the first S-box transition following the distinguisher. 
 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-
-**For related key: the difference on the key**
-à faire 
 
 **Description of the key schedule**
 The key schedule must be specified as follows. 
