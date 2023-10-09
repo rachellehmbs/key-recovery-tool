@@ -1,6 +1,3 @@
-TDL : 
-- expliquer comment choisir le type d'outil (version simple ou compliquée)
-
 #**key-recovery-tool**#
 
 This repository contains our tool for finding optimal key recovery strategies in differential attacks on SPN block ciphers. 
