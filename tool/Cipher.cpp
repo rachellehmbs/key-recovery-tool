@@ -15,54 +15,12 @@ ostream& operator<<(ostream & flux, Cipher const & c) {
         flux << c.SB[i] << " ";
 
 
-    /*for (unsigned r = 0; r < c.nrR; r++){
-        for (unsigned i = 0; i < c.sizeBlock; i++){
-            unsigned row = i/6;
-            unsigned col = i%6;
-            unsigned nouveau = (7*(6*row + col) + 1)%192;
-            cout << "k" << r << "[" << i << "] + k" << r-2 << "[" << nouveau << "]" << endl;
-        }
-    }*/
-
-
-    /*vector<unsigned> newSB(c.sizeSB);
-    for (unsigned i = 0; i < c.sizeSB; i++){
-        //flux << c.SB[i] << " ";
-        unsigned image = 0;
-        unsigned from = 0;
-        for (unsigned j = 0; j < c.lenSB; j++){
-            unsigned bit = (c.SB[i] >> j)&1;
-            unsigned temp = (bit << (c.lenSB - 1 - j) );
-            image |= temp;
-
-            bit = (i >> j)&1;
-            temp = (bit << (c.lenSB - 1 - j) );
-            from |= temp;
-
-            flux << i << "->" << from << endl;
-        }
-        newSB[from] = image;
-
-        for (unsigned i = 0; i < c.sizeSB; i++)
-            flux << newSB[i] << " ";
-    }*/
-
-
 
     flux << endl << endl << endl << "PERMutation :" << endl;
     for (unsigned i = 0; i < c.sizeBlock; i++){
         cout << c.PERM[i] << " ";
-        /*unsigned row = i/6;
-        unsigned col = i%6;
-        cout << 6*((row-col)%32) + col << " ";*/
     }
-    /*flux << endl << endl << endl << "inv PERMutation :" << endl;
-    for (unsigned i = 0; i < c.sizeBlock; i++){
-        cout << c.InvPERM[i] << " ";
-    }*/
 
-    /*for (unsigned i = 0; i < c.sizeBlock; i++)
-        cout << c.InvPERM[i] << " ";*/
     flux << endl << endl << "block size = " << c.sizeBlock << endl << endl;
     {
         flux << "DDT :" << endl;
@@ -111,7 +69,7 @@ ostream& operator<<(ostream & flux, Cipher const & c) {
     return flux;
 }
 
-Cipher::Cipher(ifstream & input_file, double N) : Npairs (N) {
+Cipher::Cipher(ifstream & input_file, double N, bool be_slow) : beslow(be_slow), Npairs (N) {
     string temp;
     string temp2;
     istringstream buffer;
@@ -209,44 +167,28 @@ Cipher::Cipher(ifstream & input_file, double N) : Npairs (N) {
     knownkeybits = vector<uint8_t> (sizeBlock*(nrR + 1));
     for (unsigned i = 0; i < sizeBlock*(nrR + 1); ++i) knownkeybits[i] = matKS.isKnown(i);
 
-    //cout << matKS << endl;
-    //cout << "here"; getchar();
     computeDDT();
     propagation();
     fillSb();
 
     getchar();
 
-    /*cout << endl << endl;
-    for (unsigned r = 1; r < nrR+1; r++){
-        for (unsigned i = 0; i < sizeBlock; i++){
-            if (r%2 == 1)
-                cout << "k" << r << "[" << i << "]" << endl;
-            else{
-                unsigned row = i/6;
-                unsigned col = i%6;
-
-                cout << "k" << r << "[" << i << "] + " << "k" << (r-2) << "[" << (7*i+1)%sizeBlock << "]" << endl;
-            }
-        }
-    }
-    //getchar();*/
 
 
     relatedSboxes = vector<vector<unsigned>> (nrR*sizeBlock/lenSB);
 
     for (unsigned r = 0; r < nrSBp; ++r) {
       for (unsigned i = 0; i < sizeBlock; ++i) {
-          auto s = (r+1)*(sizeBlock/lenSB) + (PERM[i]/lenSB);//ok
-          relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(s); //le if ne sert à rien je pense toodoooooooooooooooooooooooooooooo
+          auto s = (r+1)*(sizeBlock/lenSB) + (PERM[i]/lenSB);
+          relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(s);
           for (unsigned l = 0; l < lenSB; ++l) {
-              relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(r*(sizeBlock/lenSB) + InvPERM[(PERM[i]/lenSB)*lenSB + l]/lenSB); //ok (list of other  sboxes of the same round which contribute to the sb on which the bit i is sent)
+              relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(r*(sizeBlock/lenSB) + InvPERM[(PERM[i]/lenSB)*lenSB + l]/lenSB);
           }
           if (r > 0) {
-            auto s = (r-1)*(sizeBlock/lenSB) + (InvPERM[i]/lenSB); //ok
+            auto s = (r-1)*(sizeBlock/lenSB) + (InvPERM[i]/lenSB);
             relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(s);
             for (unsigned l = 0; l < lenSB; ++l) {
-              relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(r*(sizeBlock/lenSB) + PERM[(InvPERM[i]/lenSB)*lenSB + l]/lenSB); //ok
+              relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(r*(sizeBlock/lenSB) + PERM[(InvPERM[i]/lenSB)*lenSB + l]/lenSB);
             }
           }
 
@@ -254,16 +196,16 @@ Cipher::Cipher(ifstream & input_file, double N) : Npairs (N) {
     }
     for (unsigned r = nrR - nrSBc; r < nrR; r++) {
       for (unsigned i = 0; i < sizeBlock; ++i) {
-        auto s = (r-1)*(sizeBlock/lenSB) + (InvPERM[i]/lenSB); //ok
+        auto s = (r-1)*(sizeBlock/lenSB) + (InvPERM[i]/lenSB);
         relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(s);
         for (unsigned l = 0; l < lenSB; ++l) {
-          relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(r*(sizeBlock/lenSB) + PERM[(InvPERM[i]/lenSB)*lenSB + l]/lenSB); //ok
+          relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(r*(sizeBlock/lenSB) + PERM[(InvPERM[i]/lenSB)*lenSB + l]/lenSB);
         }
         if (r < nrR - 1) {
           auto s = (r+1)*(sizeBlock/lenSB) + (PERM[i]/lenSB);//ok
-          relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(s); //le if ne sert à rien je pense toodoooooooooooooooooooooooooooooo
+          relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(s);
           for (unsigned l = 0; l < lenSB; ++l) {
-              relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(r*(sizeBlock/lenSB) + InvPERM[(PERM[i]/lenSB)*lenSB + l]/lenSB); //ok (list of other  sboxes of the same round which contribute to the sb on which the bit i is sent)
+              relatedSboxes[r*(sizeBlock/lenSB) + (i/lenSB)].emplace_back(r*(sizeBlock/lenSB) + InvPERM[(PERM[i]/lenSB)*lenSB + l]/lenSB);
           }
         }
       }
@@ -332,7 +274,7 @@ void Cipher::propagation(){
     for (unsigned i = 0; i < nrSBp ; i++){ //we proceed round by round for the rounds before the distinguisher
         unsigned l = nrSBp - 1 - i;
         for (unsigned j = 0; j < sizeBlock/lenSB ; j++){ // one Sbox per iteration
-            if (all_of(&prop[(2*l+1)*sizeBlock+j*lenSB], &prop[(2*l+1)*sizeBlock+j*lenSB+lenSB /**il manque - 1???*/], [](unsigned x){return x == 0;})){// checking is Sbox is inactive toodoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+            if (all_of(&prop[(2*l+1)*sizeBlock+j*lenSB], &prop[(2*l+1)*sizeBlock+j*lenSB+lenSB /**il manque - 1???*/], [](unsigned x){return x == 0;})){
                 for (unsigned k = 0; k < lenSB; k++){
                     prop[2*l*sizeBlock + j*lenSB + k] = 0;
                 }
@@ -369,16 +311,20 @@ void Cipher::propagation(){
 
         // After the distinguisher
 
-    for (unsigned i = 0; i < sizeBlock; i++){
-        prop[2*(nrR - nrSBc)*sizeBlock + i] = DOUTb[i];
-        if (nrSBc > 0)
-            prop[(2*(nrR - nrSBc)+1)*sizeBlock + i] = DOUTa[i];
+    if (nrSBc > 0) {
+      for (unsigned i = 0; i < sizeBlock; i++){
+          prop[2*(nrR - nrSBc)*sizeBlock + i] = DOUTb[i];
+          if (nrSBc > 0)
+              prop[(2*(nrR - nrSBc)+1)*sizeBlock + i] = DOUTa[i];
+      }
     }
+
+
 
     for (unsigned i = 0; i < nrSBc ; i++){ //we proceed round by round for the rounds after the distinguisher
         unsigned l = nrR - nrSBc + i;
         for (unsigned j = 0; j < sizeBlock/lenSB ; j++){ // one Sbox per iteration
-            if (all_of(&prop[(2*l)*sizeBlock+j*lenSB], &prop[(2*l)*sizeBlock+j*lenSB+lenSB /* - 1 non???*/], [](unsigned x){return x == 0;})){// checking is Sbox is inactive toodooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+            if (all_of(&prop[(2*l)*sizeBlock+j*lenSB], &prop[(2*l)*sizeBlock+j*lenSB+lenSB], [](unsigned x){return x == 0;})){
                 for (unsigned k = 0; k < lenSB; k++){
                     prop[(2*l+1)*sizeBlock + j*lenSB + k] = 0;
                 }
@@ -413,17 +359,6 @@ void Cipher::propagation(){
     }
 
 
-    /*  for (unsigned l = 0; l < 2*nrR; l++){
-     cout << "l = " << l << endl;
-     for (unsigned j = 0; j < sizeBlock/lenSB;j++){
-     for (unsigned k = 0; k < lenSB; k++){
-     cout << prop[l*sizeBlock + j*lenSB + lenSB-1 -k];
-     }
-     cout << endl;
-     }
-     cout << endl;
-     }
-     getchar();*/
 }
 
 
@@ -509,11 +444,7 @@ void Cipher::fillSb(){
 
     double save_filter = 0.0;
 
-    //cout << "PLAINTEXT" << endl << endl;
 
-
-    /*cout << "filtres du début :" << endl;
-    double filter;*/
 
     for (r = 0; r < nrSBp; r++){ //for each sb layer before the diff
         for(j = 0;  j < sizeBlock/lenSB; j++){ //for each sb
@@ -521,19 +452,7 @@ void Cipher::fillSb(){
             dout = getDiff(2*r+1,j,prop);
             solSboxes[ct] = log2(getNrSol(din, dout));
 
-            // cout << "SB (" << r << "," << j << ") : " << endl;
-            // cout << "din = ";
-            // for (int i = 0; i < lenSB; i++)
-            //     cout << din[i];
-            // cout << endl;
-            // cout << "dout = ";
-            // for (int i = 0; i < lenSB; i++)
-            //     cout << dout[i];
-            // cout << endl;
-            // cout << "sol = " << solSboxes[ct] << endl;
-
-            if(/*(r == 0) &&*/ activitySBT[ct] == 1){
-                //cout << "here: " << solSboxes[ct];
+            if(activitySBT[ct] == 1){
 
                 vector<pair<unsigned, unsigned>> my_inputs;
 
@@ -567,37 +486,28 @@ void Cipher::fillSb(){
                   set_of_inputs.emplace(x);
                 }
                 for (int i = 0; i < lenSB; ++i) if (din[i] != 2) expected_size -= 1;
-                //cout << set_of_inputs.size() << " -- " << expected_size << endl;
                 double cpt = set_of_inputs.size();
                 cpt /= 1u << expected_size;
 
 
-                // auto const & ddt = DDT;
-                // auto possible_dout = possibleVectors(dout);
-                // double cpt = 0;
-                // for(unsigned d = 0; d < sizeSB; ++d)
-                //     if(any_of(possible_dout.begin(), possible_dout.end(), [&ddt, d](unsigned dd){return ddt[d][dd] != 0;})) cpt += 1;
-                // cpt /= sizeSB;
-                // for (int i = 0; i < lenSB; ++i) if (din[i] != 2) cpt *= 2;
-                //if (ct == 2) {cout << "cpt = " << cpt << endl; getchar();}
                 solSboxes[ct] -= log2(cpt);
-                filterSB[ct] = -log2(cpt);
-                solSboxesIn[ct] = expected_size - filterSB[ct];
-                //filter = -log2(cpt);
-                // cout << "SB (" << r << "," << j << ") : " << endl;
-                // cout << "filter = " << -log2(cpt) << endl;
-                // getchar();
-                //cout << " --> " << solSboxes[ct] << endl;
-                //Npairs += log2(cpt);
-                //save_filter += log2(cpt);
-               /* cout << save_filter << endl;
-                cout << "ct = " << ct << ", nsol = " << solSboxes[ct] << ", Npairs = " << Npairs << endl;*/
+                if (!beslow || r != 0) {
+                  filterSB[ct] = -log2(cpt);
+                  solSboxesIn[ct] = expected_size - filterSB[ct];
+                }
+                else {
+                  filterSB[ct] = 0;
+                  solSboxesIn[ct] = expected_size;
+                  Npairs += log2(cpt);
+                  save_filter -= log2(cpt);
+                }
+
             }
-            //cout << "sol = " << solSboxes[ct] << endl << endl;
+
             ct++;
         }
     }
-    //getchar();
+
         // For middle rounds, that are of no interest to us
     for (r = nrSBp; r < nrR - nrSBc; r++){ //for each sb layer before the diff
         for(j = 0;  j < sizeBlock/lenSB; j++){ //for each sb
@@ -607,29 +517,16 @@ void Cipher::fillSb(){
     }
         // For rounds after DeltaY
 
-    //cout << "CIPHERTEXT" << endl << endl;
 
-    //cout << "filtres de la fin :" << endl;
+
+
     for (r = nrR - nrSBc; r < nrR; r++){ //for each sb after the diff
         for(j = 0;  j < sizeBlock/lenSB; j++){ //for each sb
             din = getDiff(2*r,j,prop);
             dout = getDiff(2*r+1,j,prop);
             solSboxes[ct] = log2(getNrSol(din, dout));
 
-
-            /*cout << "SB (" << r << "," << j << ") : " << endl;
-            cout << "din = ";
-            for (int i = 0; i < lenSB; i++)
-                cout << din[i];
-            cout << endl;
-            cout << "dout = ";
-            for (int i = 0; i < lenSB; i++)
-                cout << dout[i];
-            cout << endl;
-            cout << "sol = " << solSboxes[ct] << endl;*/
-
-
-            if(/*(r == nrR - 1) &&*/ activitySBT[ct] == 1){
+            if(activitySBT[ct] == 1){
 
               vector<pair<unsigned, unsigned>> my_inputs;
 
@@ -663,45 +560,30 @@ void Cipher::fillSb(){
                 set_of_inputs.emplace(x);
               }
               for (int i = 0; i < lenSB; ++i) if (dout[i] != 2) expected_size -= 1;
-              //cout << set_of_inputs.size() << " -- " << expected_size << endl;
               double cpt = set_of_inputs.size();
               cpt /= 1u << expected_size;
 
-                //cout << "here: " << solSboxes[ct];
-                // auto const & ddt = DDT;
-                // auto possible_din = possibleVectors(din);
-                // double cpt = 0;
-                // for(unsigned d = 0; d < sizeSB; ++d){
-                //     if(any_of(possible_din.begin(), possible_din.end(), [&ddt, d](unsigned dd){return ddt[dd][d] != 0;})) cpt += 1;
-                // }
-                // cpt /= sizeSB;
-                // for (int i = 0; i < lenSB; ++i) if (dout[i] != 2) cpt *= 2;
+               
                 solSboxes[ct] -= log2(cpt);
-                filterSB[ct] = -log2(cpt);
-                solSboxesIn[ct] = expected_size - filterSB[ct];
-                // auto filter = -log2(cpt);
-                  // cout << "SB (" << r << "," << j << ") : " << endl;
-                  // cout << "filter = " << -log2(cpt) << endl;
-                  // cout << "in : " << solSboxesIn[ct] << endl;
-                  // getchar();
-                //cout << " --> " << solSboxes[ct] << endl;
-
-                //Npairs += log2(cpt);
-                //save_filter += log2(cpt);
-
-                //cout << "ct = " << ct%32 << ", nsol = " << solSboxes[ct] << ", Npairs = " << Npairs << endl;
+                if (!beslow || r != nrR - 1) {
+                  filterSB[ct] = -log2(cpt);
+                  solSboxesIn[ct] = expected_size - filterSB[ct];
+                }
+                else {
+                  filterSB[ct] = 0;
+                  solSboxesIn[ct] = expected_size;
+                  Npairs += log2(cpt);
+                  save_filter -= log2(cpt);
+                }
+                
             }
-            //cout << "sol = " << solSboxes[ct] << endl << endl;
+
             ct++;
         }
     }
 
-    /*for (unsigned i = 0; i < solSboxes.size(); ++i) {
-      if (i%32 == 0) cout << endl;
-      cout << solSboxes[i] << " ";
-    }*/
 
-    /*if (false){*/cout << "Filter on N: " << save_filter << endl;/*}*/
+    cout << "Filter on N: " << save_filter << endl;
 }
 
 unsigned Cipher::getNrSol(vector <unsigned> din, vector < unsigned > dout){
@@ -713,7 +595,6 @@ unsigned Cipher::getNrSol(vector <unsigned> din, vector < unsigned > dout){
             nrsol += DDT[possible_din[i]][possible_dout[j]];
         }
     }
-    //cout << "nrsol = " << nrsol << endl;
     return nrsol;
 }
 

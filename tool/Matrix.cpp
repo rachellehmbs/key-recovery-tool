@@ -54,15 +54,6 @@ Matrix::Matrix(std::vector<std::vector<unsigned>> v) { // constructor from syste
     ++l;
   }
 
-  // for (unsigned i = 0; i < nblines; ++i) {
-  //   cout << "k" << front[i]/192 << "[" << front[i]%192 << "]";
-  //   for (unsigned j = 0; j < nbcols; ++j) {
-  //     if (lines[i][j] != 0) cout << " + k" << columns[j]/192 << "[" << columns[j]%192 << "]";
-  //   }
-  //   cout << endl;
-  // }
-  // getchar();
-
 
 }
 
@@ -150,7 +141,6 @@ Matrix Matrix::extract(std::vector<unsigned> const & vars) {
     }
     else swapLineColumn(i,j);
   }
-  //cout << *this << endl << " ---- " << endl;
   res.space = vector<uint8_t> (res.nblines * res.nbcols);
   res.lines = vector<uint8_t *> (res.nblines);
   res.front = vector<unsigned> (res.nblines);
@@ -168,17 +158,6 @@ Matrix Matrix::extract(std::vector<unsigned> const & vars) {
   }
   return res;
 }
-
-
-// ostream& operator<<(std::ostream & flux, Matrix const & mat) {
-//   for (unsigned i = 0; i < mat.nblines; ++i) {
-//     for (unsigned j = 0; j < mat.nbcols; ++j) {
-//       flux << (unsigned) mat(i,j) << " ";
-//     }
-//     flux << endl;
-//   }
-//   return flux;
-// }
 
 ostream& operator<<(std::ostream & flux, Matrix const & mat) {
   unsigned const & nbits = 16;

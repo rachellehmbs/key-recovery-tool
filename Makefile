@@ -3,7 +3,7 @@
 
 CC := g++
 #CC := icpc
-SRCDIR := src
+SRCDIR := tool
 BUILDDIR := build
 #CFLAGS := -fast -s -Wall -Wno-unused-variable -std=c++11 -DNDEBUG -opt-multi-version-aggressive -xHost
 #CFLAGS := -fast -s -Wall -Wno-unused-variable -std=c++11 -DNDEBUG -opt-multi-version-aggressive -xHost -prof-use -prof-dir=profile/
