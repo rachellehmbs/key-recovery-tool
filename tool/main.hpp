@@ -1,8 +1,5 @@
 //
 //  main.hpp
-//  
-//
-//  Created by Heim on 16/06/2023.
 //
 
 #ifndef main_hpp

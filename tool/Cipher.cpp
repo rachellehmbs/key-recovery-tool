@@ -2,8 +2,6 @@
     //  Cipher.cpp
     //
     //
-    //  Created by Heim on 19/06/2023.
-    //
 #include <set>
 #include "Cipher.hpp"
 using namespace std;
